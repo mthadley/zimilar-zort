@@ -32,9 +32,10 @@ pub fn main() anyerror!void {
 
     std.sort.sort(Line, lines_slice, Line.SortContext{}, Line.lessThan);
 
-    const stdout = std.io.getStdOut().writer();
+    var writer = std.io.bufferedWriter(std.io.getStdOut().writer());
     for (lines_slice) |line| {
-        try stdout.print("{s}\n", .{line.line});
+        _ = try writer.write(line.line);
+        _ = try writer.write("\n");
     }
 }
 
