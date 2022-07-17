@@ -50,7 +50,7 @@ const Line = struct {
 
     const SortContext = struct {};
 
-    fn lessThan(_: SortContext, left: Line, right: Line) bool {
+    fn lessThan(_: SortContext, left: Self, right: Self) bool {
         return left.distance < right.distance;
     }
 };
