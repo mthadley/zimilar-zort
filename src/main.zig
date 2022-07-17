@@ -28,14 +28,16 @@ pub fn main() anyerror!void {
     }
 
     const lines_slice = lines.toOwnedSlice();
-
     std.sort.sort(Line, lines_slice, Line.SortContext{}, Line.lessThan);
 
     var writer = std.io.bufferedWriter(std.io.getStdOut().writer());
+
     for (lines_slice) |line| {
         _ = try writer.write(line.line);
         _ = try writer.write("\n");
     }
+
+    try writer.flush();
 }
 
 const MAX_STDIN_SIZE = 5_000_000_000_000;
