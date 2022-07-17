@@ -8,7 +8,6 @@ pub fn main() anyerror!void {
     const allocator = arena.allocator();
 
     const args = try process.argsAlloc(allocator);
-    defer process.argsFree(allocator, args);
 
     if (args.len != 2) {
         std.log.err("Usage: zimilar-sort [NEEDLE]\n", .{});
