@@ -15,7 +15,7 @@ pub fn main() anyerror!void {
     }
     const needle = args[1];
 
-    const raw_lines = try std.io.getStdIn().readToEndAlloc(allocator, MAX_STDIN_SIZE);
+    const raw_lines = try std.io.getStdIn().readToEndAlloc(allocator, std.math.maxInt(usize));
 
     var lines = ArrayList(Line).init(allocator);
     var it = std.mem.tokenize(u8, raw_lines, "\n");
@@ -41,8 +41,6 @@ pub fn main() anyerror!void {
 
     try writer.flush();
 }
-
-const MAX_STDIN_SIZE = 5_000_000_000_000;
 
 const Line = struct {
     const Self = @This();
