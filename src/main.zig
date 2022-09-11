@@ -28,7 +28,7 @@ pub fn main() anyerror!void {
     }
 
     const lines_slice = lines.toOwnedSlice();
-    std.sort.sort(Line, lines_slice, Line.SortContext{}, Line.lessThan);
+    std.sort.sort(Line, lines_slice, {}, Line.lessThan);
 
     var writer = std.io.bufferedWriter(std.io.getStdOut().writer());
 
@@ -48,9 +48,7 @@ const Line = struct {
     line: []const u8,
     distance: usize,
 
-    const SortContext = struct {};
-
-    fn lessThan(_: SortContext, left: Self, right: Self) bool {
+    fn lessThan(_: void, left: Self, right: Self) bool {
         return left.distance < right.distance;
     }
 };
