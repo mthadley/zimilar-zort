@@ -32,12 +32,10 @@ pub fn main() anyerror!void {
 
     var writer = std.io.bufferedWriter(std.io.getStdOut().writer());
 
-    for (lines_slice) |line| {
-        if (line.distance == 0) continue;
-
+    for (lines_slice) |line| if (line.distance != 0) {
         _ = try writer.write(line.line);
         _ = try writer.write("\n");
-    }
+    };
 
     try writer.flush();
 }
