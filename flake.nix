@@ -17,7 +17,7 @@
         # Largely stolen from gyro:
         # https://github.com/mattnite/gyro/blob/19cf64d93a5ad917a9e49f2b58f006a10210cb84/flake.nix#L37-L62
         packages.default = pkgs.stdenv.mkDerivation {
-          name = "zimilar-sort";
+          name = "zimilar-zort";
           src = ./.;
 
           nativeBuildInputs = with pkgs; [
