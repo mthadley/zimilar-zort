@@ -8,6 +8,7 @@ pub fn main() anyerror!void {
     const allocator = arena.allocator();
 
     const args = try process.argsAlloc(allocator);
+    defer process.argsFree(allocator, args);
 
     if (args.len != 2) {
         std.log.err("Usage: zimilar-sort [NEEDLE]\n", .{});
@@ -16,15 +17,19 @@ pub fn main() anyerror!void {
     const needle = args[1];
 
     const raw_lines = try std.io.getStdIn().readToEndAlloc(allocator, std.math.maxInt(usize));
+    defer allocator.free(raw_lines);
 
     var lines = ArrayList(Line).init(allocator);
+    defer lines.deinit();
+
     var it = std.mem.tokenize(u8, raw_lines, "\n");
 
     while (it.next()) |line| {
-        try lines.append(.{
-            .line = line,
-            .distance = try levenshtein.distance(allocator, needle, line),
-        });
+        const distance = try levenshtein.distance(allocator, needle, line);
+
+        if (distance != 0) {
+            try lines.append(.{ .line = line, .distance = distance });
+        }
     }
 
     const lines_slice = lines.toOwnedSlice();
@@ -32,10 +37,10 @@ pub fn main() anyerror!void {
 
     var writer = std.io.bufferedWriter(std.io.getStdOut().writer());
 
-    for (lines_slice) |line| if (line.distance != 0) {
+    for (lines_slice) |line| {
         _ = try writer.write(line.line);
         _ = try writer.write("\n");
-    };
+    }
 
     try writer.flush();
 }
