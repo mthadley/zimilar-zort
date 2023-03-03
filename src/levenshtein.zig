@@ -1,57 +1,39 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const Matrix = @import("matrix.zig");
 
+/// Returns the levenshtein distance between two "strings". This is a Zig
+/// implementation of the algorithm from the Rust `strsim` crate:
+///
+///   https://docs.rs/strsim/0.10.0/src/strsim/lib.rs.html#200-226
+///
 pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
-    if (a.len == 0 and b.len == 0) return 0;
     if (a.len == 0) return b.len;
-    if (b.len == 0) return a.len;
 
-    const height = b.len + 1;
-    const width = a.len + 1;
+    var cache = try allocator.alloc(usize, b.len);
+    defer allocator.free(cache);
 
-    var matrix = try Matrix.init(allocator, height, width);
-    defer matrix.deinit();
+    for (cache) |_, i| cache[i] = i + 1;
 
-    // Initialize bounds of matrix:
-    //     f o o
-    //   0 1 2 3
-    // b 1 x x x
-    // a 2 x x x
-    // r 3 x x x
-    {
-        var i: usize = 0;
-        while (i < width) : (i += 1) matrix.set(0, i, i);
-    }
-    {
-        var i: usize = 0;
-        while (i < height) : (i += 1) matrix.set(i, 0, i);
-    }
+    var result: usize = 0;
 
-    {
-        var i: usize = 1;
-        while (i < height) : (i += 1) {
-            var j: usize = 1;
-            while (j < width) : (j += 1) {
-                const cost: u1 = if (b[i - 1] == a[j - 1]) 0 else 1;
+    for (a) |charA, i| {
+        result = i + 1;
+        var distanceB = i;
 
-                const above = matrix.get(i - 1, j) + 1;
-                const left = matrix.get(i, j - 1) + 1;
-                const diag = matrix.get(i - 1, j - 1) + cost;
+        for (b) |charB, j| {
+            const cost: u1 = if (charA == charB) 0 else 1;
+            const distanceA = distanceB + cost;
 
-                matrix.set(i, j, @minimum(above, @minimum(left, diag)));
-            }
+            distanceB = cache[j];
+            result = @minimum(result + 1, @minimum(distanceA, distanceB + 1));
+            cache[j] = result;
         }
     }
 
-    return matrix.get(height - 1, width - 1);
+    return result;
 }
 
 const t = std.testing;
-
-test {
-    std.testing.refAllDecls(@This());
-}
 
 test "distance" {
     try t.expectEqual(@as(usize, 0), try distance(t.allocator, "", ""));
