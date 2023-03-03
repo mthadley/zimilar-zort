@@ -5,7 +5,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let pkgs = nixpkgs.legacyPackages.${system};
       in
-      {
+      rec {
         devShells.default = pkgs.mkShell
           {
             nativeBuildInputs = with pkgs; [
@@ -45,6 +45,10 @@
               name = "Michael Hadley";
             }];
           };
+        };
+
+        overlays.default = final: prev: {
+          zimilar-zort = packages.default;
         };
       }
     );
