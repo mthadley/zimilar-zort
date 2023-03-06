@@ -12,7 +12,7 @@ pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
     var cache = try allocator.alloc(usize, b.len);
     defer allocator.free(cache);
 
-    for (cache) |_, i| cache[i] = i + 1;
+    for (cache) |*entry, i| entry.* = i + 1;
 
     var result: usize = 0;
 
