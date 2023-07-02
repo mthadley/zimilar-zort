@@ -25,7 +25,7 @@ pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
             const distanceA = distanceB + cost;
 
             distanceB = cache[j];
-            result = @minimum(result + 1, @minimum(distanceA, distanceB + 1));
+            result = @min(result + 1, @min(distanceA, distanceB + 1));
             cache[j] = result;
         }
     }

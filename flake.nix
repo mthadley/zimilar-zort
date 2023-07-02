@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/release-22.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/release-23.05";
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
@@ -9,6 +9,7 @@
         devShells.default = pkgs.mkShell
           {
             nativeBuildInputs = with pkgs; [
+              hyperfine
               zig
               zls
             ];
