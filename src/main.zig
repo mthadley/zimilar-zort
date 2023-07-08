@@ -35,14 +35,12 @@ pub fn main() anyerror!void {
     const lines_slice = lines.toOwnedSlice();
     std.sort.sort(Line, lines_slice, {}, Line.lessThan);
 
-    var writer = std.io.bufferedWriter(std.io.getStdOut().writer());
+    var stdout_buffer = std.io.bufferedWriter(std.io.getStdOut().writer());
+    var buffered_stdout = stdout_buffer.writer();
 
-    for (lines_slice) |line| {
-        _ = try writer.write(line.line);
-        _ = try writer.write("\n");
-    }
+    for (lines_slice) |line| try buffered_stdout.print("{s}\n", .{line.line});
 
-    try writer.flush();
+    try stdout_buffer.flush();
 }
 
 const Line = struct {
