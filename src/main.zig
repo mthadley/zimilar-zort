@@ -3,7 +3,7 @@ const process = std.process;
 const levenshtein = @import("levenshtein.zig");
 const ArrayList = std.ArrayList;
 
-pub fn main() anyerror!void {
+pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
 
