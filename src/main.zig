@@ -24,11 +24,11 @@ pub fn main() anyerror!void {
 
     var it = std.mem.tokenize(u8, raw_lines, "\n");
 
-    while (it.next()) |line| {
-        const distance = try levenshtein.distance(allocator, needle, line);
+    while (it.next()) |chars| {
+        const distance = try levenshtein.distance(allocator, needle, chars);
 
         if (distance != 0) {
-            try lines.append(.{ .line = line, .distance = distance });
+            try lines.append(.{ .chars = chars, .distance = distance });
         }
     }
 
@@ -38,7 +38,7 @@ pub fn main() anyerror!void {
     var stdout_buffer = std.io.bufferedWriter(std.io.getStdOut().writer());
     var buffered_stdout = stdout_buffer.writer();
 
-    for (lines_slice) |line| try buffered_stdout.print("{s}\n", .{line.line});
+    for (lines_slice) |line| try buffered_stdout.print("{s}\n", .{line.chars});
 
     try stdout_buffer.flush();
 }
@@ -46,7 +46,7 @@ pub fn main() anyerror!void {
 const Line = struct {
     const Self = @This();
 
-    line: []const u8,
+    chars: []const u8,
     distance: usize,
 
     fn lessThan(_: void, left: Self, right: Self) bool {
