@@ -32,8 +32,8 @@ pub fn main() !void {
         }
     }
 
-    const lines_slice = lines.toOwnedSlice();
-    std.sort.sort(Line, lines_slice, {}, Line.lessThan);
+    const lines_slice = try lines.toOwnedSlice();
+    std.sort.insertion(Line, lines_slice, {}, Line.lessThan);
 
     var stdout_buffer = std.io.bufferedWriter(std.io.getStdOut().writer());
     var buffered_stdout = stdout_buffer.writer();

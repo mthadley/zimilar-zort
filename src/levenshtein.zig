@@ -12,15 +12,15 @@ pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
     var cache = try allocator.alloc(usize, b.len);
     defer allocator.free(cache);
 
-    for (cache) |*entry, i| entry.* = i + 1;
+    for (cache, 0..) |*entry, i| entry.* = i + 1;
 
     var result: usize = 0;
 
-    for (a) |charA, i| {
+    for (a, 0..) |charA, i| {
         result = i + 1;
         var distanceB = i;
 
-        for (b) |charB, j| {
+        for (b, 0..) |charB, j| {
             const cost: u1 = if (charA == charB) 0 else 1;
             const distanceA = distanceB + cost;
 
