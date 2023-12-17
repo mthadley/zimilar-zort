@@ -31,7 +31,7 @@
 
           installPhase = ''
             runHook preInstall
-            zig build -Doptimize=ReleaseSafe --prefix $out install
+            zig build -Doptimize=ReleaseFast --prefix $out install
             runHook postInstall
           '';
 
