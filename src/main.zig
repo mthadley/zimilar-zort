@@ -32,13 +32,12 @@ pub fn main() !void {
         }
     }
 
-    const lines_slice = try lines.toOwnedSlice();
-    std.sort.pdq(Line, lines_slice, {}, Line.lessThan);
+    std.sort.pdq(Line, lines.items, {}, Line.lessThan);
 
     var stdout_buffer = std.io.bufferedWriter(std.io.getStdOut().writer());
     var buffered_stdout = stdout_buffer.writer();
 
-    for (lines_slice) |line| try buffered_stdout.print("{s}\n", .{line.chars});
+    for (lines.items) |line| try buffered_stdout.print("{s}\n", .{line.chars});
 
     try stdout_buffer.flush();
 }
