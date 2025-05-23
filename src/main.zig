@@ -22,7 +22,7 @@ pub fn main() !void {
     var lines = ArrayList(Line).init(allocator);
     defer lines.deinit();
 
-    var it = std.mem.tokenize(u8, raw_lines, "\n");
+    var it = std.mem.tokenizeAny(u8, raw_lines, "\n");
 
     while (it.next()) |chars| {
         const distance = try levenshtein.distance(allocator, needle, chars);
