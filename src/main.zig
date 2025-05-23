@@ -37,7 +37,20 @@ pub fn main() !void {
     var stdout_buffer = std.io.bufferedWriter(std.io.getStdOut().writer());
     var buffered_stdout = stdout_buffer.writer();
 
-    for (lines.items) |line| try buffered_stdout.print("{s}\n", .{line.chars});
+    for (lines.items) |line| buffered_stdout.print("{s}\n", .{line.chars}) catch |err| switch (err) {
+        error.BrokenPipe => {
+            // Assume the other side has closed the pipe and just exit early. Otherwise,
+            // you'd get an ugly error if you did something like this:
+            //
+            // $ echo "foo\nbar\nbaz" | zimilar-sort bar | head -n 1
+            //
+            process.exit(0);
+        },
+        else => {
+            std.log.err("Error writing to stdout: {}\n", .{err});
+            process.exit(1);
+        },
+    };
 
     try stdout_buffer.flush();
 }
