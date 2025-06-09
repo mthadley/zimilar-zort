@@ -4,11 +4,15 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
 
-    const exe = b.addExecutable(.{
-        .name = "zimilar-zort",
+    const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+    });
+
+    const exe = b.addExecutable(.{
+        .name = "zimilar-zort",
+        .root_module = exe_mod,
     });
     b.installArtifact(exe);
 
@@ -21,16 +25,11 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
 
-    setup_tests(b);
-}
-
-fn setup_tests(b: *std.Build) void {
-    const test_step = b.step("test", "Run unit tests");
-
     const main_test = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
+        .root_module = exe_mod,
     });
     const run_main_test = b.addRunArtifact(main_test);
 
+    const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_main_test.step);
 }
