@@ -21,7 +21,7 @@ pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
         var distanceB = i;
 
         for (b, 0..) |charB, j| {
-            const cost: u1 = if (charA == charB) 0 else 1;
+            const cost = @intFromBool(charA != charB);
             const distanceA = distanceB + cost;
 
             distanceB = cache[j];
