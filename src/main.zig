@@ -3,12 +3,10 @@ const process = std.process;
 const levenshtein = @import("levenshtein.zig");
 const ArrayList = std.ArrayList;
 
-pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const allocator = arena.allocator();
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.arena.allocator();
 
-    const args = try process.argsAlloc(allocator);
-    defer process.argsFree(allocator, args);
+    const args = try init.minimal.args.toSlice(allocator);
 
     if (args.len != 2) {
         std.log.err("Usage: zimilar-sort [NEEDLE]\n", .{});
@@ -16,7 +14,8 @@ pub fn main() !void {
     }
     const needle = args[1];
 
-    const raw_lines = try std.fs.File.stdin().readToEndAlloc(allocator, std.math.maxInt(usize));
+    var file_reader = std.Io.File.stdin().reader(init.io, &.{});
+    const raw_lines = try file_reader.interface.allocRemaining(allocator, .unlimited);
     defer allocator.free(raw_lines);
 
     var lines = ArrayList(Line).empty;
@@ -35,7 +34,7 @@ pub fn main() !void {
     std.sort.pdq(Line, lines.items, {}, Line.lessThan);
 
     var stdout_buffer: [1024]u8 = undefined;
-    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+    var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);
     const stdout = &stdout_writer.interface;
 
     for (lines.items) |line| stdout.print("{s}\n", .{line.chars}) catch |err| {
