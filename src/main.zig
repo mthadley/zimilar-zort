@@ -37,9 +37,22 @@ pub fn main(init: std.process.Init) !void {
     var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);
     const stdout = &stdout_writer.interface;
 
-    for (lines.items) |line| stdout.print("{s}\n", .{line.chars}) catch |err| {
-        std.log.err("Error writing to stdout: {}\n", .{err});
-        process.exit(1);
+    for (lines.items) |line| stdout.print("{s}\n", .{line.chars}) catch |err| switch (err) {
+        error.WriteFailed => {
+            switch (stdout_writer.err.?) {
+                // Assume the other side has closed the pipe and just exit early.
+                // Otherwise, you'd get an ugly error if you did something like
+                // this:
+                //
+                // $ echo "foo\nbar\nbaz" | zimilar-sort bar | head -n 1
+                //
+                error.BrokenPipe => std.process.exit(141),
+                else => {
+                    std.log.err("Error writing to stdout: {}\n", .{err});
+                    process.exit(1);
+                },
+            }
+        },
     };
 
     try stdout.flush();
