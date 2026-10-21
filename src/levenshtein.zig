@@ -1,26 +1,28 @@
 const std = @import("std");
-const Allocator = std.mem.Allocator;
 
 /// Returns the levenshtein distance between two "strings". This is a Zig
 /// implementation of the algorithm from the Rust `strsim` crate:
 ///
 ///   https://docs.rs/strsim/0.10.0/src/strsim/lib.rs.html#200-226
 ///
-pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
-    if (a.len == 0) return b.len;
+/// `cache` must have at least `@min(a.len, b.len)` entries. It is owned by
+/// the caller so a single buffer can be reused across many calls.
+pub fn distance(cache: []usize, a: []const u8, b: []const u8) usize {
+    // The cache is indexed by the inner string, so make that the shorter of
+    // the two. Levenshtein distance is symmetric, so swapping is free.
+    const long, const short = if (a.len >= b.len) .{ a, b } else .{ b, a };
 
-    var cache = try allocator.alloc(usize, b.len);
-    defer allocator.free(cache);
+    if (short.len == 0) return long.len;
 
-    for (cache, 0..) |*entry, i| entry.* = i + 1;
+    for (cache[0..short.len], 0..) |*entry, i| entry.* = i + 1;
 
     var result: usize = 0;
 
-    for (a, 0..) |charA, i| {
+    for (long, 0..) |charA, i| {
         result = i + 1;
         var distanceB = i;
 
-        for (b, 0..) |charB, j| {
+        for (short, 0..) |charB, j| {
             const cost = @intFromBool(charA != charB);
             const distanceA = distanceB + cost;
 
@@ -36,15 +38,16 @@ pub fn distance(allocator: Allocator, a: []const u8, b: []const u8) !usize {
 const t = std.testing;
 
 test "distance" {
-    try t.expectEqual(@as(usize, 0), try distance(t.allocator, "", ""));
-    try t.expectEqual(@as(usize, 0), try distance(t.allocator, "a", "a"));
+    var cache: [64]usize = undefined;
+    try t.expectEqual(@as(usize, 0), distance(&cache, "", ""));
+    try t.expectEqual(@as(usize, 0), distance(&cache, "a", "a"));
 
-    try t.expectEqual(@as(usize, 1), try distance(t.allocator, "a", ""));
-    try t.expectEqual(@as(usize, 1), try distance(t.allocator, "", "a"));
+    try t.expectEqual(@as(usize, 1), distance(&cache, "a", ""));
+    try t.expectEqual(@as(usize, 1), distance(&cache, "", "a"));
 
-    try t.expectEqual(@as(usize, 0), try distance(t.allocator, "foo", "foo"));
-    try t.expectEqual(@as(usize, 1), try distance(t.allocator, "b", "a"));
-    try t.expectEqual(@as(usize, 2), try distance(t.allocator, "gumbo", "gambol"));
-    try t.expectEqual(@as(usize, 3), try distance(t.allocator, "mentors", "center"));
-    try t.expectEqual(@as(usize, 12), try distance(t.allocator, "hello", "noteventhesame"));
+    try t.expectEqual(@as(usize, 0), distance(&cache, "foo", "foo"));
+    try t.expectEqual(@as(usize, 1), distance(&cache, "b", "a"));
+    try t.expectEqual(@as(usize, 2), distance(&cache, "gumbo", "gambol"));
+    try t.expectEqual(@as(usize, 3), distance(&cache, "mentors", "center"));
+    try t.expectEqual(@as(usize, 12), distance(&cache, "hello", "noteventhesame"));
 }
