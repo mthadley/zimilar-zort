@@ -29,7 +29,7 @@ pub fn main(init: std.process.Init) !void {
 
     // A larger buffer keeps the per-line writes from turning into one syscall
     // each.
-    var stdout_buffer: [1024]u8 = undefined;
+    var stdout_buffer: [16 * 1024]u8 = undefined;
     var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);
     const stdout = &stdout_writer.interface;
 
